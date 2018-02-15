@@ -6,7 +6,7 @@ require 'fileutils'
 Vagrant.require_version ">= 1.6.0"
 
 # Make sure the vagrant-ignition plugin is installed
-required_plugins = %w(vagrant-ignition)
+required_plugins = %w(vagrant-ignition vagrant-cachier vagrant-hostsupdater vagrant-docker-compose)
 
 plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
 if not plugins_to_install.empty?
@@ -21,6 +21,7 @@ end
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "user-data")
 IGNITION_CONFIG_PATH = File.join(File.dirname(__FILE__), "config.ign")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
+INSTALL_PROVISION_PATH = File.join(File.dirname(__FILE__), "install.sh")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
@@ -59,7 +60,7 @@ end
 
 Vagrant.configure("2") do |config|
   # always use Vagrants insecure key
-  config.ssh.insert_key = false
+  config.ssh.insert_key = true
   # forward ssh agent to easily ssh into the different machines
   config.ssh.forward_agent = true
 
@@ -167,6 +168,9 @@ Vagrant.configure("2") do |config|
           config.ignition.path = 'config.ign'
         end
       end
+
+      # Run shell install
+      config.vm.provision :shell, path: "#{INSTALL_PROVISION_PATH}", :privileged => true
     end
   end
 end
