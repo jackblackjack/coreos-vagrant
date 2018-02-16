@@ -25,6 +25,7 @@ INSTALL_PROVISION_PATH = File.join(File.dirname(__FILE__), "install.sh")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
+#$expose_docker_tcp = true
 $instance_name_prefix = "core"
 $enable_serial_logging = false
 $share_home = false
@@ -33,7 +34,9 @@ $vm_memory = 1024
 $vm_cpus = 1
 $vb_cpuexecutioncap = 100
 $shared_folders = {}
-$forwarded_ports = {}
+$forwarded_ports = {
+  80 => 8080
+}
 $docker_files_basepath = '/var/lib/docker/volumes/shared-data/_data/repos/'
 
 # Attempt to apply the deprecated environment variable NUM_INSTANCES to
@@ -147,6 +150,7 @@ Vagrant.configure("2") do |config|
       #config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
       $shared_folders.each_with_index do |(host_folder, guest_folder), index|
         config.vm.synced_folder host_folder.to_s, guest_folder.to_s, id: "core-share%02d" % index, nfs: true, mount_options: ['nolock,vers=3,udp']
+        #config.vm.synced_folder ".", "/var/www", :mount_options => ["dmode=777", "fmode=666"]
       end
 
       if $share_home
@@ -177,13 +181,24 @@ Vagrant.configure("2") do |config|
       config.vm.provision :docker do |d|
 
         # Run image redis.
-        d.build_image "#{$docker_files_basepath}/infrastructure-docker/db/redis", args: "-t redis/base"
-        d.run "redis/base"
+        #d.build_image "#{$docker_files_basepath}/infrastructure-docker/db/redis", args: "-t redis/base"
+        #d.run "redis/base"
 
         # Run image node.
         d.build_image "#{$docker_files_basepath}/infrastructure-docker/web/node/base", args: "-t node/base"
-        d.run "node/base"
+        d.run "node/base",
+          auto_assign_name: false,
+          args: "-p 80:80"
       end
+
+      #config.vm.provision "file", source: "./ssh/config", destination: '/tmp/config'
+      #config.vm.provision "file", source: "./ssh/github_key.ppk", destination: '/tmp/github_key.ppk'
+
+      # Run compose.
+      #config.vm.provision :docker
+      #config.vm.provision :docker_compose, 
+      #  yml: "#{$docker_files_basepath}/infrastructure-docker/db/redis/docker-compose.yml", 
+      #  run:"always"
     end
   end
 end
