@@ -181,7 +181,7 @@ Vagrant.configure("2") do |config|
         d.run "redis/base"
 
         # Run image node.
-        d.build_image "#{$docker_files_basepath}/infrastructure-docker/web/node/minimal-alpine", args: "-t node/base"
+        d.build_image "#{$docker_files_basepath}/infrastructure-docker/web/node/base", args: "-t node/base"
         d.run "node/base"
       end
     end
