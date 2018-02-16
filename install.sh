@@ -97,4 +97,4 @@ curl -L "https://github.com/docker/compose/releases/download/1.19.0/docker-compo
 chmod +x /opt/bin/docker-compose ;
 
 # 7. Build project images.
-cd /var/lib/docker/volumes/shared-data/_data/repos/infrastructure-docker/db/redis/ && /opt/bin/docker-compose up -d;
+#cd /var/lib/docker/volumes/shared-data/_data/repos/infrastructure-docker/db/redis/ && /opt/bin/docker-compose up -d;
