@@ -34,6 +34,7 @@ $vm_cpus = 1
 $vb_cpuexecutioncap = 100
 $shared_folders = {}
 $forwarded_ports = {}
+$docker_files_basepath = '/var/lib/docker/volumes/shared-data/_data/repos/'
 
 # Attempt to apply the deprecated environment variable NUM_INSTANCES to
 # $num_instances while allowing config.rb to override it
@@ -171,6 +172,18 @@ Vagrant.configure("2") do |config|
 
       # Run shell install
       config.vm.provision :shell, path: "#{INSTALL_PROVISION_PATH}", :privileged => true
+
+      # Run images.
+      config.vm.provision :docker do |d|
+
+        # Run image redis.
+        d.build_image "#{$docker_files_basepath}/infrastructure-docker/db/redis", args: "-t redis/base"
+        d.run "redis/base"
+
+        # Run image node.
+        d.build_image "#{$docker_files_basepath}/infrastructure-docker/web/node/minimal-alpine", args: "-t node/base"
+        d.run "node/base"
+      end
     end
   end
 end
